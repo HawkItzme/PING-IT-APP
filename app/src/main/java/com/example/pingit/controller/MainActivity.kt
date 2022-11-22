@@ -1,8 +1,14 @@
 package com.example.pingit.controller
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -11,41 +17,56 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.core.view.get
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.pingit.R
+import com.example.pingit.Services.AuthService
+import com.example.pingit.Services.UserDataService
+import com.example.pingit.Utilities.BROADCAST_USER_DATA_CHANGE
 import com.example.pingit.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setSupportActionBar(binding.appBarMain.toolbar)
 
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController()
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.channel_List
-            ), drawerLayout
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerLayout, binding.appBarMain.toolbar, R.string.open_navigation, R.string.close_navigation)
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
+        IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+    }
+    private val userDataChangeReceiver = object : BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (AuthService.isLoggedIn){
+                binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = UserDataService.name
+                binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userMailNavHeader).text = UserDataService.email
+                val resourceId = resources.getIdentifier(UserDataService.avatarName, "drawable",
+                packageName)
+                binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(resourceId)
+                binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.loginButtonNavHeader).text = "Logout"
+
+
+            }
+        }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController()
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    override fun onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)){
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }else{
+            super.onBackPressed()
+        }
     }
-
     fun loginButtonClicked(view: View){
         val loginIntent = Intent(this, LoginActivity::class.java)
         startActivity(loginIntent)

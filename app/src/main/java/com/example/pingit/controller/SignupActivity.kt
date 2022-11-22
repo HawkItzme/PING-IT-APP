@@ -1,11 +1,15 @@
 package com.example.pingit.controller
 
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.pingit.Services.AuthService
 import com.example.pingit.Services.UserDataService
+import com.example.pingit.Utilities.BROADCAST_USER_DATA_CHANGE
 import com.example.pingit.databinding.ActivityMainBinding
 import com.example.pingit.databinding.ActivitySignupBinding
 import kotlin.random.Random
@@ -20,6 +24,7 @@ class SignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.createSpinner.visibility = View.INVISIBLE
     }
     fun generateUserAvatar(view: View){
       val random = Random
@@ -50,27 +55,56 @@ class SignupActivity : AppCompatActivity() {
 
     }
     fun createUserClicked(view: View){
+        enableSpinner(true)
         val userName = binding.createUsernameText.text.toString()
         val email = binding.createEmailText.text.toString()
         val password = binding.createPasswordText.text.toString()
-        AuthService.registerUser(this, email, password){registerSuccess ->
-            if(registerSuccess){
-                AuthService.loginUser(this, email, password){loginSuccess ->
-                    if (loginSuccess){
-                       AuthService.createUser(this, userName, email, userAvatar, avatarColor){
-                           createSuccess ->
-                           if (createSuccess){
-                               println(UserDataService.avatarName)
-                               println(UserDataService.avatarColor)
-                               println(UserDataService.name)
-                               finish()
-                           }
-                       }
+
+        if (userName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()){
+            AuthService.registerUser(this, email, password){registerSuccess ->
+                if(registerSuccess){
+                    AuthService.loginUser(this, email, password){loginSuccess ->
+                        if (loginSuccess){
+                            AuthService.createUser(this, userName, email, userAvatar, avatarColor){
+                                    createSuccess ->
+                                if (createSuccess){
+                                    val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
+                                    LocalBroadcastManager.getInstance(this).sendBroadcast(userDataChange)
+                                    enableSpinner(false)
+                                    finish()
+                                }else{
+                                    erroeToast()
+                                }
+                            }
+                        }else{
+                            erroeToast()
+                        }
                     }
+                }else{
+                    erroeToast()
                 }
             }
+        }else{
+            Toast.makeText(this, "Make sure Usernsme, Email & PAssword are field,  please try again.", Toast.LENGTH_LONG).show()
+             enableSpinner(false)
         }
 
+
+    }
+    fun erroeToast(){
+        Toast.makeText(this, "Something went wrong, please try again.", Toast.LENGTH_LONG).show()
+        enableSpinner(false)
+    }
+
+    fun enableSpinner(enable: Boolean){
+        if (enable){
+            binding.createSpinner.visibility = View.VISIBLE
+        }else{
+            binding.createSpinner.visibility = View.INVISIBLE
+        }
+        binding.createUserBtn.isEnabled = !enable
+        binding.createAvatarImageView.isEnabled = !enable
+        binding.backgroundColorBtn.isEnabled = !enable
     }
 
 }

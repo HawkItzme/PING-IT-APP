@@ -7,4 +7,9 @@ object UserDataService {
     var email= ""
     var name = ""
 
+    fun returnAvatarColor(components: String) : Int{
+
+        val strippedColor = components
+            .replace("[", "")
+    }
 }
