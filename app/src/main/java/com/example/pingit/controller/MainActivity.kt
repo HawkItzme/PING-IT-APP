@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                 val resourceId = resources.getIdentifier(UserDataService.avatarName, "drawable",
                 packageName)
                 binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(resourceId)
+                binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.loginButtonNavHeader).text = "Logout"
 
 
@@ -68,8 +70,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun loginButtonClicked(view: View){
-        val loginIntent = Intent(this, LoginActivity::class.java)
-        startActivity(loginIntent)
+        if (AuthService.isLoggedIn){
+            //logOut
+            UserDataService.logout()
+            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = "Login!!"
+            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userMailNavHeader).text = ""
+            binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(R.drawable.userpic)
+            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userImageNavHeader).setBackgroundColor(Color.TRANSPARENT)
+            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.loginButtonNavHeader).text = "Login!!"
+        }else{
+            val loginIntent = Intent(this, LoginActivity::class.java)
+            startActivity(loginIntent)
+        }
     }
     fun addChannelClicked(view: View){
 
