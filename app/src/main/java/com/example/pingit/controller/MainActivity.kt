@@ -1,15 +1,15 @@
 package com.example.pingit.controller
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -84,9 +84,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun addChannelClicked(view: View){
+        if (AuthService.isLoggedIn){
 
+            val builder = AlertDialog.Builder(this)
+            val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
+
+            builder.setView(dialogView)
+                .setPositiveButton("ADD", DialogInterface.OnClickListener{dialog, i ->
+
+                    val nameTextField = dialogView.findViewById<EditText>(R.id.addChannelNameTxt)
+                    val desTextField = dialogView.findViewById<EditText>(R.id.addChannnelDesTxt)
+                    val channelName = nameTextField.text.toString()
+                    val channelDesc = desTextField.text.toString()
+                })
+                .setNegativeButton("CANCEL"){dialog, i ->
+
+                }
+                .show()
+        }
     }
     fun sentMessageBtnClicked(view: View){
 
+        hideKeyboard()
+    }
+    fun hideKeyboard(){
+        val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (inputManager.isAcceptingText){
+            inputManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+        }
     }
 }
