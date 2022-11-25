@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         if (AuthService.isLoggedIn){
             //logOut
             UserDataService.logout()
-            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = "Login!!"
+            binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = ""
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userMailNavHeader).text = ""
             binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(R.drawable.userpic)
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userImageNavHeader).setBackgroundColor(Color.TRANSPARENT)
