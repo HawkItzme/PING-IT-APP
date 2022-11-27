@@ -21,13 +21,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.get
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.pingit.Model.Channel
 import com.example.pingit.R
 import com.example.pingit.Services.AuthService
+import com.example.pingit.Services.MessageService
 import com.example.pingit.Services.UserDataService
 import com.example.pingit.Utilities.BROADCAST_USER_DATA_CHANGE
 import com.example.pingit.Utilities.SOCKET_URL
 import com.example.pingit.databinding.ActivityMainBinding
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +42,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.appBarMain.toolbar)
+        socket.connect()
+        socket.on("channelCreated", onNewChannel)
 
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.appBarMain.toolbar, R.string.open_navigation, R.string.close_navigation)
@@ -51,15 +56,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        super.onResume()
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
             BROADCAST_USER_DATA_CHANGE))
-        socket.connect()
-    }
 
-    override fun onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
-        super.onPause()
+        super.onResume()
     }
 
     override fun onDestroy() {
@@ -123,6 +123,17 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 .show()
+        }
+    }
+
+    private val onNewChannel = Emitter.Listener { args ->
+        runOnUiThread {
+            val channelName = args[0] as String
+            val channelDescription = args[0] as String
+            val channelId = args[0] as String
+
+            val newChannel = Channel(channelName, channelDescription, channelId)
+            MessageService.channels.add(newChannel)
         }
     }
     fun sentMessageBtnClicked(view: View){
