@@ -25,10 +25,13 @@ import com.example.pingit.R
 import com.example.pingit.Services.AuthService
 import com.example.pingit.Services.UserDataService
 import com.example.pingit.Utilities.BROADCAST_USER_DATA_CHANGE
+import com.example.pingit.Utilities.SOCKET_URL
 import com.example.pingit.databinding.ActivityMainBinding
+import io.socket.client.IO
 
 class MainActivity : AppCompatActivity() {
 
+    val socket = IO.socket(SOCKET_URL)
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +49,24 @@ class MainActivity : AppCompatActivity() {
         IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
     }
+
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
+            BROADCAST_USER_DATA_CHANGE))
+        socket.connect()
+    }
+
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        socket.disconnect()
+        super.onDestroy()
+    }
+
     private val userDataChangeReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             if (AuthService.isLoggedIn){
@@ -96,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                     val desTextField = dialogView.findViewById<EditText>(R.id.addChannnelDesTxt)
                     val channelName = nameTextField.text.toString()
                     val channelDesc = desTextField.text.toString()
+                    socket.emit("newChannel", channelName, channelDesc)
                 })
                 .setNegativeButton("CANCEL"){dialog, i ->
 
