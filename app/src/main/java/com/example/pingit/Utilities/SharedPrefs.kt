@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.android.volley.toolbox.Volley
 
-class SharedPrefs(context: Context) : SharedPreferences {
+ class SharedPrefs(context: Context) {
 
     val PREFS_FILENAME = "prefs"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)

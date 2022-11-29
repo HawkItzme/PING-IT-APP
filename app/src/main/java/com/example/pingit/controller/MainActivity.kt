@@ -5,19 +5,9 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.navigation.NavigationView
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.get
@@ -38,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     val socket = IO.socket(SOCKET_URL)
     private lateinit var binding: ActivityMainBinding
     lateinit var channelAdapter: ArrayAdapter<Channel>
+    var selectedChannel: Channel? = null
 
 
 
@@ -60,6 +51,13 @@ class MainActivity : AppCompatActivity() {
         )
         if (App.prefs.isLoggedIn){
             AuthService.findUserByEmail(this){}
+        }
+
+        binding.navView.findViewById<ListView>(R.id.channel_List).setOnItemClickListener {_, _, i, _ ->
+                selectedChannel = MessageService.channels[i]
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+                updateWithChannel()
+
         }
     }
     private fun setupAdapters(){
@@ -90,9 +88,14 @@ class MainActivity : AppCompatActivity() {
                 binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.loginButtonNavHeader).text = "Logout"
 
-                MessageService.getChannel(context){complete ->
+                MessageService.getChannel {complete ->
                     if (complete){
-                        channelAdapter.notifyDataSetChanged()
+                        if (MessageService.channels.count() > 0){
+                            selectedChannel = MessageService.channels[0]
+                            channelAdapter.notifyDataSetChanged()
+                            updateWithChannel()
+                        }
+
                     }
 
                 }
@@ -101,6 +104,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun updateWithChannel(){
+    binding.appBarMain.contentMain.mainChannelName.text = "#${selectedChannel?.name}"
+    }
     override fun onBackPressed() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)){
             binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -129,7 +135,7 @@ class MainActivity : AppCompatActivity() {
             val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
 
             builder.setView(dialogView)
-                .setPositiveButton("ADD", DialogInterface.OnClickListener{dialog, i ->
+                .setPositiveButton("ADD", DialogInterface.OnClickListener{_, _ ->
 
                     val nameTextField = dialogView.findViewById<EditText>(R.id.addChannelNameTxt)
                     val desTextField = dialogView.findViewById<EditText>(R.id.addChannnelDesTxt)
@@ -137,7 +143,7 @@ class MainActivity : AppCompatActivity() {
                     val channelDesc = desTextField.text.toString()
                     socket.emit("newChannel", channelName, channelDesc)
                 })
-                .setNegativeButton("CANCEL"){dialog, i ->
+                .setNegativeButton("CANCEL"){_, _->
 
                 }
                 .show()
