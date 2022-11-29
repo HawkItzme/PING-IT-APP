@@ -58,6 +58,9 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
         IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
+        if (App.prefs.isLoggedIn){
+            AuthService.findUserByEmail(this){}
+        }
     }
     private fun setupAdapters(){
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
@@ -78,7 +81,7 @@ class MainActivity : AppCompatActivity() {
 
     private val userDataChangeReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context, intent: Intent?) {
-            if (AuthService.isLoggedIn){
+            if (App.prefs.isLoggedIn){
                 binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = UserDataService.name
                 binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userMailNavHeader).text = UserDataService.email
                 val resourceId = resources.getIdentifier(UserDataService.avatarName, "drawable",
@@ -106,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun loginButtonClicked(view: View){
-        if (AuthService.isLoggedIn){
+        if (App.prefs.isLoggedIn){
             //logOut
             UserDataService.logout()
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = ""
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun addChannelClicked(view: View){
-        if (AuthService.isLoggedIn){
+        if (App.prefs.isLoggedIn){
 
             val builder = AlertDialog.Builder(this)
             val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)

@@ -8,6 +8,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.pingit.Model.Channel
 import com.example.pingit.Utilities.URL_GET_CHANNELS
+import com.example.pingit.controller.App
 import org.json.JSONException
 
 object MessageService {
@@ -41,7 +42,7 @@ object MessageService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer ${AuthService.authToken}")
+                headers.put("Authorization", "Bearer ${App.prefs.authToken}")
                 return headers
             }
         }
