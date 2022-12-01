@@ -163,6 +163,13 @@ class MainActivity : AppCompatActivity() {
     }
     fun sentMessageBtnClicked(view: View){
 
+        if(App.prefs.isLoggedIn && binding.appBarMain.contentMain.messaeTextView.text.isNotEmpty() && selectedChannel != null){
+            val userId = UserDataService.id
+            val channelId = selectedChannel!!.id
+            socket.emit("newMessage", UserDataService.avatarName, UserDataService.avatarColor )
+            binding.appBarMain.contentMain.messaeTextView.text.clear()
+            hideKeyboard()
+        }
         hideKeyboard()
     }
     fun hideKeyboard(){
