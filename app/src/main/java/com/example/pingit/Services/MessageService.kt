@@ -7,12 +7,14 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.pingit.Model.Channel
+import com.example.pingit.Model.Message
 import com.example.pingit.Utilities.URL_GET_CHANNELS
 import com.example.pingit.controller.App
 import org.json.JSONException
 
 object MessageService {
     val channels = ArrayList<Channel>()
+    val message = ArrayList<Message>()
 
     fun getChannel(complete: (Boolean) -> Unit){
 

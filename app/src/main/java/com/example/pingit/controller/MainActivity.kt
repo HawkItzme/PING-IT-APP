@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
         socket.connect()
         socket.on("channelCreated", onNewChannel)
+        socket.on("messageCreated", onNewMessage)
 
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.appBarMain.toolbar, R.string.open_navigation, R.string.close_navigation)
@@ -161,6 +162,24 @@ class MainActivity : AppCompatActivity() {
             channelAdapter.notifyDataSetChanged()
         }
     }
+
+    private val onNewMessage = Emitter.Listener { args ->
+        runOnUiThread {
+            val msgBody = args[0] as String
+            val channelId = args[2] as String
+            val userName = args[3] as String
+            val userAvatar = args[4] as String
+            val userAvatarColor = args[5] as String
+            val id = args[6] as String
+            val timeStamp = args[7] as String
+
+            val newMessage = Message(msgBody, userName, channelId, userAvatar, userAvatarColor, id, timeStamp)
+
+            MessageService.message.add(newMessage)
+
+
+        }
+    }
     fun sentMessageBtnClicked(view: View){
 
         if(App.prefs.isLoggedIn && binding.appBarMain.contentMain.messaeTextView.text.isNotEmpty() && selectedChannel != null){
@@ -170,7 +189,6 @@ class MainActivity : AppCompatActivity() {
             binding.appBarMain.contentMain.messaeTextView.text.clear()
             hideKeyboard()
         }
-        hideKeyboard()
     }
     fun hideKeyboard(){
         val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
