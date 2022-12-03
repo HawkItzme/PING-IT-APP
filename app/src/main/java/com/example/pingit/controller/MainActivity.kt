@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.get
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.pingit.Adapters.MessageAdapter
 import com.example.pingit.Model.Channel
 import com.example.pingit.Model.Message
 import com.example.pingit.R
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     val socket = IO.socket(SOCKET_URL)
     private lateinit var binding: ActivityMainBinding
     lateinit var channelAdapter: ArrayAdapter<Channel>
+    lateinit var messageAdapter: MessageAdapter
     var selectedChannel: Channel? = null
 
 
@@ -65,6 +68,11 @@ class MainActivity : AppCompatActivity() {
     private fun setupAdapters(){
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
         binding.channelList.adapter = channelAdapter
+
+        messageAdapter  = MessageAdapter(this, MessageService.message)
+        binding.appBarMain.contentMain.messageListView.adapter = messageAdapter
+        val layoutManager = LinearLayoutManager(this)
+        binding.appBarMain.contentMain.messageListView.layoutManager = layoutManager
     }
 
     override fun onResume() {
@@ -111,8 +119,10 @@ class MainActivity : AppCompatActivity() {
         if (selectedChannel != null) {
             MessageService.getMessages(selectedChannel!!.id) { complete ->
                 if (selectedChannel != null) {
-                    for (message in MessageService.message) {
-                        println(message.message)
+                    messageAdapter.notifyDataSetChanged()
+                    if (messageAdapter.itemCount > 0){
+                        binding.appBarMain.contentMain.messageListView.smoothScrollToPosition(messageAdapter.itemCount - 1)
+
                     }
                 }
             }
@@ -130,6 +140,8 @@ class MainActivity : AppCompatActivity() {
         if (App.prefs.isLoggedIn){
             //logOut
             UserDataService.logout()
+            channelAdapter.notifyDataSetChanged()
+            messageAdapter.notifyDataSetChanged()
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userNameNavHeader).text = ""
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userMailNavHeader).text = ""
             binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(R.drawable.userpic)
@@ -198,6 +210,9 @@ class MainActivity : AppCompatActivity() {
                         timeStamp
                     )
                     MessageService.message.add(newMessage)
+                    messageAdapter.notifyDataSetChanged()
+                    binding.appBarMain.contentMain.messageListView.smoothScrollToPosition(messageAdapter.itemCount - 1)
+
                 }
             }
         }
