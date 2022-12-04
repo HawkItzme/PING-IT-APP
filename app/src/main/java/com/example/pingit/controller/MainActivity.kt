@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
         setupAdapters()
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
+            BROADCAST_USER_DATA_CHANGE))
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
         IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
@@ -73,13 +75,6 @@ class MainActivity : AppCompatActivity() {
         binding.appBarMain.contentMain.messageListView.adapter = messageAdapter
         val layoutManager = LinearLayoutManager(this)
         binding.appBarMain.contentMain.messageListView.layoutManager = layoutManager
-    }
-
-    override fun onResume() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
-            BROADCAST_USER_DATA_CHANGE))
-
-        super.onResume()
     }
 
     override fun onDestroy() {
@@ -147,6 +142,7 @@ class MainActivity : AppCompatActivity() {
             binding.navView.get(R.layout.nav_header_main).findViewById<ImageView>(R.id.userImageNavHeader).setImageResource(R.drawable.userpic)
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.userImageNavHeader).setBackgroundColor(Color.TRANSPARENT)
             binding.navView.get(R.layout.nav_header_main).findViewById<TextView>(R.id.loginButtonNavHeader).text = "Login!!"
+            binding.appBarMain.contentMain.mainChannelName.text = "Please Log In"
         }else{
             val loginIntent = Intent(this, LoginActivity::class.java)
             startActivity(loginIntent)
